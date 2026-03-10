@@ -501,6 +501,25 @@ const email = String(rawEmail || "").trim().toLowerCase();
       res.status(500).json({ success: false, message: "Error al eliminar los datos." });
     }
   });
+  app.post("/api/save-gemini-key", (req, res) => {
+  const rawEmail = req.body?.email;
+  const email = String(rawEmail || "").trim().toLowerCase();
+  const apiKey = req.body?.apiKey;
+
+  if (!email || !apiKey) {
+    return res.status(400).json({ success: false, message: "Faltan datos." });
+  }
+
+  try {
+    db.prepare("UPDATE users SET gemini_api_key = ? WHERE email = ?")
+      .run(apiKey, email);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error guardando API key:", error);
+    res.status(500).json({ success: false });
+  }
+});
 
   app.post("/api/create-checkout-session", async (req, res) => {
     if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
