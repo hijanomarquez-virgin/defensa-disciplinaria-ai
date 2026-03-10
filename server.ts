@@ -47,6 +47,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE,
     name TEXT,
+    gemini_api_key TEXT,
     is_beta_user BOOLEAN DEFAULT 0,
     payment_status TEXT DEFAULT 'no_iniciado', -- no_iniciado, pendiente_verificacion, confirmado, rechazado
     access_status TEXT DEFAULT 'bloqueado', -- bloqueado, activo
