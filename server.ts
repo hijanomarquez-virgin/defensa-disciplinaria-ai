@@ -6,9 +6,12 @@ import Database from "better-sqlite3";
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import { createRequire } from "module";
+import { fileURLToPath } from "url";
 
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
