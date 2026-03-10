@@ -429,6 +429,8 @@ const Chat = ({ extractedText, isPaid, fileData }: { extractedText: string; isPa
   const [messages, setMessages] = useState<{ role: "user" | "model"; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+const MAX_QUESTIONS = 10;
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -440,7 +442,16 @@ const Chat = ({ extractedText, isPaid, fileData }: { extractedText: string; isPa
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading ) return;
-
+    if (questionCount >= MAX_QUESTIONS) {
+  setMessages(prev => [
+    ...prev,
+    {
+      role: "model",
+      text: `Has alcanzado el límite de ${MAX_QUESTIONS} consultas en esta sesión.`
+    }
+  ]);
+  return;
+}
     const userMessage = input.trim();
     setInput("");
     setMessages(prev => [...prev, { role: "user", text: userMessage }]);
@@ -452,8 +463,15 @@ const Chat = ({ extractedText, isPaid, fileData }: { extractedText: string; isPa
         parts: [{ text: m.text }]
       }));
       
+      
       const response = await chatWithDocument(extractedText, userMessage, history, fileData);
-      setMessages(prev => [...prev, { role: "model", text: response || "Lo siento, no he podido procesar tu pregunta." }]);
+
+setMessages(prev => [
+  ...prev,
+  { role: "model", text: response || "Lo siento, no he podido procesar tu pregunta." }
+]);
+
+setQuestionCount(prev => prev + 1);
     } catch (error: any) {
       console.error("Chat error:", error);
       const errorMessage = error.message || "Error al conectar con la IA. Por favor, inténtalo de nuevo.";

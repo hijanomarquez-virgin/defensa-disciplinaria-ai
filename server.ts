@@ -82,7 +82,7 @@ adminEmails.forEach(email => {
 async function startServer() {
   console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode`);
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
 
