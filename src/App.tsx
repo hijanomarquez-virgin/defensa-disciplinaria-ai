@@ -431,7 +431,9 @@ const Chat = ({ extractedText, isPaid, fileData }: { extractedText: string; isPa
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
-const MAX_QUESTIONS = 10;
+  const FREE_QUESTIONS_WITHOUT_OWN_KEY = 2;
+  const MAX_QUESTIONS_WITH_OWN_KEY = 10;
+  const hasOwnGeminiKey = !!localStorage.getItem("user_gemini_api_key");
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -443,12 +445,23 @@ const MAX_QUESTIONS = 10;
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading ) return;
-    if (questionCount >= MAX_QUESTIONS) {
+    if (!hasOwnGeminiKey && questionCount >= FREE_QUESTIONS_WITHOUT_OWN_KEY) {
   setMessages(prev => [
     ...prev,
     {
       role: "model",
-      text: `Has alcanzado el límite de ${MAX_QUESTIONS} consultas en esta sesión.`
+      text: "Has agotado tus 2 consultas gratuitas. Para seguir usando la IA, introduce tu propia API Key de Gemini en 'Configuración de IA'."
+    }
+  ]);
+  return;
+}
+
+if (hasOwnGeminiKey && questionCount >= MAX_QUESTIONS_WITH_OWN_KEY) {
+  setMessages(prev => [
+    ...prev,
+    {
+      role: "model",
+      text: `Has alcanzado el límite de ${MAX_QUESTIONS_WITH_OWN_KEY} consultas en esta sesión.`
     }
   ]);
   return;
@@ -539,6 +552,9 @@ setQuestionCount(prev => prev + 1);
           <Send className="w-4 h-4" />
         </button>
       </form>
+      <p className="text-xs text-slate-400 px-4 pb-4 bg-slate-50">
+  Consultas usadas: {questionCount}/{hasOwnGeminiKey ? MAX_QUESTIONS_WITH_OWN_KEY : FREE_QUESTIONS_WITHOUT_OWN_KEY}
+</p>
     </Card>
   );
 };
