@@ -430,7 +430,10 @@ const Chat = ({ extractedText, isPaid, fileData }: { extractedText: string; isPa
   const [messages, setMessages] = useState<{ role: "user" | "model"; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [questionCount, setQuestionCount] = useState(0);
+  const [questionCount, setQuestionCount] = useState(() => {
+  const saved = sessionStorage.getItem("chat_question_count");
+  return saved ? Number(saved) : 0;
+});
   const FREE_QUESTIONS_WITHOUT_OWN_KEY = 2;
   const MAX_QUESTIONS_WITH_OWN_KEY = 10;
   const hasOwnGeminiKey = !!localStorage.getItem("user_gemini_api_key");
@@ -485,7 +488,11 @@ setMessages(prev => [
   { role: "model", text: response || "Lo siento, no he podido procesar tu pregunta." }
 ]);
 
-setQuestionCount(prev => prev + 1);
+setQuestionCount(prev => {
+  const next = prev + 1;
+  sessionStorage.setItem("chat_question_count", String(next));
+  return next;
+});
     } catch (error: any) {
       console.error("Chat error:", error);
       const errorMessage = error.message || "Error al conectar con la IA. Por favor, inténtalo de nuevo.";
