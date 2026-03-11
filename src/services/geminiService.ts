@@ -142,11 +142,14 @@ const withRetry = async <T>(
 };
 
 const getAI = () => {
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+  const userKey = localStorage.getItem("user_gemini_api_key");
+  const finalKey = userKey || apiKey;
+
+  if (!finalKey) {
+    throw new Error("No Gemini API key available");
   }
 
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({ apiKey: finalKey });
 };
 
 const analyzeBlock = async (
