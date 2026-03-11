@@ -8,7 +8,8 @@ import {
   AlertTriangle, 
   AlertCircle,
   Download, 
-  Lock, 
+  Lock,
+  Key, 
   ChevronRight, 
   Scale, 
   User, 
@@ -549,6 +550,8 @@ const Dashboard = ({ userEmail, onLogout, verifyAccess, appLogo, initialPaymentS
   const [extractedText, setExtractedText] = useState<string>("");
   const [fileData, setFileData] = useState<{ base64: string, mimeType: string } | undefined>(undefined);
   const [isPaid, setIsPaid] = useState(initialPaymentStatus === 'confirmado');
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [savingGeminiKey, setSavingGeminiKey] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showExtractedText, setShowExtractedText] = useState(false);
   const [confirmExport, setConfirmExport] = useState<{ type: "word" | "pdf" | null; isOpen: boolean }>({ type: null, isOpen: false });
@@ -699,23 +702,58 @@ const Dashboard = ({ userEmail, onLogout, verifyAccess, appLogo, initialPaymentS
   };
 
   const handleDeleteData = async () => {
-    if (confirm("¿Estás absolutamente seguro? Esta acción borrará permanentemente tu cuenta y todos tus análisis. No se puede deshacer.")) {
-      try {
-        const res = await fetch("/api/delete-account", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userEmail }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert("Tus datos han sido eliminados correctamente.");
-          onLogout();
-        }
-      } catch (err) {
-        alert("Error al eliminar los datos.");
+  if (confirm("¿Estás absolutamente seguro? Esta acción borrará permanentemente tu cuenta y todos tus análisis. No se puede deshacer.")) {
+    try {
+      const res = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Tus datos han sido eliminados correctamente.");
+        onLogout();
       }
+    } catch (err) {
+      alert("Error al eliminar los datos.");
     }
-  };
+  }
+};
+
+const handleSaveGeminiKey = async () => {
+  if (!geminiApiKey.trim()) {
+    alert("Introduce tu API Key de Gemini.");
+    return;
+  }
+
+  try {
+    setSavingGeminiKey(true);
+
+    const res = await fetch("/api/save-gemini-key", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: userEmail,
+        apiKey: geminiApiKey,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("API Key guardada correctamente.");
+    } else {
+      alert("No se pudo guardar la API Key.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error al guardar la API Key.");
+  } finally {
+    setSavingGeminiKey(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -770,6 +808,35 @@ const Dashboard = ({ userEmail, onLogout, verifyAccess, appLogo, initialPaymentS
       <main className="flex-1 p-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Controls */}
         <div className="lg:col-span-4 space-y-6">
+          <Card className="space-y-4 border-blue-100 bg-blue-50/10">
+  <div className="flex items-center gap-2 text-blue-700">
+    <Key className="w-5 h-5" />
+    <h4 className="font-bold uppercase tracking-wider text-xs">
+      Configuración de IA
+    </h4>
+  </div>
+
+  <p className="text-xs text-slate-600">
+    Introduce tu API Key de Gemini para usar tu propia cuota de IA.
+  </p>
+
+  <input
+    type="text"
+    placeholder="AIzaSy..."
+    className="w-full px-3 py-2 border rounded-lg text-sm"
+    value={geminiApiKey}
+    onChange={(e) => setGeminiApiKey(e.target.value)}
+  />
+
+  <Button onClick={handleSaveGeminiKey} disabled={savingGeminiKey}>
+    Guardar API Key
+  </Button>
+
+  <p className="text-[10px] text-slate-400">
+    Crea tu API Key gratis en https://aistudio.google.com/app/apikey
+  </p>
+</Card>
+
           <Card className="space-y-6">
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-slate-900">Nuevo Análisis</h3>
