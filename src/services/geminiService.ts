@@ -324,8 +324,8 @@ ${JSON.stringify(blockResults)}
 
   return cleanJsonResponse(response.text);
 };
-
-const generateFinalExpertReport = async (
+const generateFinalExpertReport = async
+ (
   ai: GoogleGenAI,
   chronology: any,
   blockResults: any[]
@@ -360,9 +360,11 @@ Debes elaborar un informe técnico final, profundo y estructurado, basándote EX
 
 NO inventes hechos, fechas ni normativa.
 Cuando algo no conste, indica "NO CONSTA EN EL PDF".
-
-ESTRUCTURA OBLIGATORIA:
-
+IMPORTANTE:
+- La fase3_caducidad y la fase4_prescripcion deben razonarse según la norma material principal detectada en la fase0_norma_aplicable.
+- Si detectas LO 4/2010, analiza desde ese régimen disciplinario y complementa con la Ley 39/2015 en lo procedimental.
+- Si detectas RD 33/1986, analiza desde ese régimen disciplinario y complementa con la Ley 39/2015 en lo procedimental.
+- Si existe duda razonable sobre la norma material aplicable, indícalo expresamente y explica cómo afecta al análisis de caducidad y prescripción.
 ESTRUCTURA OBLIGATORIA:
 
 0. fase0_norma_aplicable:
