@@ -1,3 +1,4 @@
+import { runOCR } from "./ocrService";
 import { GoogleGenAI, Type } from "@google/genai";
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -532,19 +533,35 @@ export const analyzeLegalDocument = async (
   try {
     const ai = getAI();
 
-    const normalizedText = normalizeText(text);
-    const blocks = splitTextIntoBlocks(normalizedText);
+    let normalizedText = normalizeText(text);
+let blocks = splitTextIntoBlocks(normalizedText);
 
     if (!blocks.length) {
-      if (fileData?.base64) {
-        onProgress?.("No se ha extraído texto útil del PDF. El documento parece escaneado o vacío.");
-        throw new Error(
-          "No se pudo extraer texto útil del PDF. Convierte el documento con OCR y vuelve a intentarlo."
-        );
-      }
+  if (fileData?.base64) {
+    onProgress?.("No se ha extraído texto útil del PDF. Activando OCR para documento escaneado...");
 
-      throw new Error("No se ha podido extraer texto del documento.");
+    const ocrText = await runOCR(fileData.base64);
+
+    if (!ocrText || ocrText.trim().length < 50) {
+      throw new Error(
+        "No se pudo extraer texto útil del PDF ni siquiera con OCR."
+      );
     }
+
+    normalizedText = normalizeText(ocrText);
+    blocks = splitTextIntoBlocks(normalizedText);
+
+    if (!blocks.length) {
+      throw new Error(
+        "El OCR se ejecutó, pero no se pudo obtener texto suficiente para analizar el documento."
+      );
+    }
+
+    onProgress?.(`OCR completado correctamente. Se han generado ${blocks.length} bloques para análisis.`);
+  } else {
+    throw new Error("No se ha podido extraer texto del documento.");
+  }
+}
 
     onProgress?.(
       `Iniciando análisis jurídico profesional (${numPages || "?"} páginas, ${blocks.length} bloques)...`
