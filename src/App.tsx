@@ -765,6 +765,7 @@ const handleSaveGeminiKey = async () => {
     const data = await res.json();
 
     if (data.success) {
+      localStorage.setItem("user_gemini_api_key", geminiApiKey);
       alert("API Key guardada correctamente.");
     } else {
       alert("No se pudo guardar la API Key.");

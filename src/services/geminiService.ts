@@ -1,11 +1,26 @@
 import { runOCR } from "./ocrService";
 import { GoogleGenAI, Type } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.error("CRITICAL: GEMINI_API_KEY is not defined in the environment!");
+  console.error("CRITICAL: VITE_GEMINI_API_KEY is not defined in the environment!");
 }
+
+const getAI = () => {
+  const userKey =
+    typeof window !== "undefined"
+      ? localStorage.getItem("user_gemini_api_key")
+      : null;
+
+  const finalKey = userKey || apiKey;
+
+  if (!finalKey) {
+    throw new Error("No Gemini API key available");
+  }
+
+  return new GoogleGenAI({ apiKey: finalKey });
+};
 
 const BLOCK_CHAR_LIMIT = 12000;
 const MAX_CONTEXT_FOR_CHAT = 18000;
@@ -140,17 +155,6 @@ const withRetry = async <T>(
   }
 
   throw lastError;
-};
-
-const getAI = () => {
-  const userKey = localStorage.getItem("user_gemini_api_key");
-  const finalKey = userKey || apiKey;
-
-  if (!finalKey) {
-    throw new Error("No Gemini API key available");
-  }
-
-  return new GoogleGenAI({ apiKey: finalKey });
 };
 
 const analyzeBlock = async (
@@ -324,14 +328,14 @@ ${JSON.stringify(blockResults)}
 
   return cleanJsonResponse(response.text);
 };
-const generateFinalExpertReport = async
- (
+const generateFinalExpertReport = async (
   ai: GoogleGenAI,
   chronology: any,
   blockResults: any[]
 ) => {
   const prompt = `
 Eres una abogada de despacho jurídico especializada en expedientes disciplinarios de la Policía Nacional.
+
 FASE 0 OBLIGATORIA: DETERMINACIÓN AUTOMÁTICA DEL RÉGIMEN JURÍDICO APLICABLE
 
 Antes de analizar el fondo del asunto, debes determinar automáticamente qué régimen normativo disciplinario material resulta aplicable al expediente, utilizando exclusivamente los datos contenidos en la cronología y en las extracciones del expediente.
@@ -353,6 +357,7 @@ CRITERIOS DE DECISIÓN:
 - Si existe duda razonable, indícalo expresamente.
 - Debes justificar la elección con indicios documentales, referencias normativas, situación administrativa, terminología empleada y estructura del expediente.
 - La Ley 39/2015 debe tenerse siempre en cuenta en materia procedimental, aunque la norma material principal sea LO 4/2010 o RD 33/1986.
+
 Debes elaborar un informe técnico final, profundo y estructurado, basándote EXCLUSIVAMENTE en:
 
 1. la cronología unificada
@@ -568,7 +573,7 @@ export const analyzeLegalDocument = async (
     const ai = getAI();
 
     let normalizedText = normalizeText(text);
-let blocks = splitTextIntoBlocks(normalizedText);
+    let blocks = splitTextIntoBlocks(normalizedText);
 
     if (!blocks.length) {
   if (fileData?.base64) {
@@ -631,7 +636,9 @@ let blocks = splitTextIntoBlocks(normalizedText);
   validResults.push({
     resumen_bloque: normalizedText.slice(0, 2000),
     actuaciones: [],
-    hechos_clave: []
+    normativa: [],
+    hechos_clave: [],
+    alertas_plazos: []
   });
 }
 
