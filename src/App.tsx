@@ -51,7 +51,6 @@ import {
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { analyzeLegalDocument, chatWithDocument } from "./services/geminiService";
-import { generateLogo } from "./services/logoService";
 import { exportToWord, exportToPDF, exportAlegacionesToWord } from "./utils/exportUtils";
 import { LegalModal, PrivacyPolicy, TermsAndConditions, LegalDisclaimer } from "./components/LegalModals";
 import { loadStripe } from "@stripe/stripe-js";
@@ -1680,26 +1679,8 @@ export default function App() {
   const [appLogo, setAppLogo] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLogo = async () => {
-      // Check cache first
-      const cachedLogo = localStorage.getItem("app_logo_cache");
-      if (cachedLogo) {
-        setAppLogo(cachedLogo);
-        return;
-      }
-
-      try {
-        const logo = await generateLogo();
-        if (logo) {
-          setAppLogo(logo);
-          localStorage.setItem("app_logo_cache", logo);
-        }
-      } catch (err) {
-        console.error("Error generating logo", err);
-      }
-    };
-    fetchLogo();
-  }, []);
+  setAppLogo("/logo.png");
+}, []);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("auth_email");
@@ -1739,10 +1720,11 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_email");
-    setUserEmail(null);
-    setView("landing");
-  };
+  localStorage.removeItem("auth_email");
+  localStorage.removeItem("app_logo_cache");
+  setUserEmail(null);
+  setView("landing");
+};
 
   if (checking) {
     return (
