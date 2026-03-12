@@ -327,7 +327,7 @@ ${JSON.stringify(blockResults)}
   }
 
   return cleanJsonResponse(response.text);
-};
+}
 const generateFinalExpertReport = async (
   ai: GoogleGenAI,
   chronology: any,
