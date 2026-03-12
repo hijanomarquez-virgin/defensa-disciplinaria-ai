@@ -1020,6 +1020,17 @@ const handleSaveGeminiKey = async () => {
                     </div>
 
                     <div id="analysis-content" className="space-y-10">
+                      <Card className="space-y-4 border-blue-100 bg-blue-50/10">
+  <div className="flex items-center gap-2 text-blue-700">
+    <Scale className="w-5 h-5" />
+    <h4 className="font-bold uppercase tracking-wider text-xs">
+      Fase 0: Determinación del Régimen Jurídico Aplicable
+    </h4>
+  </div>
+  <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
+    {analysisResult.fase0_norma_aplicable}
+  </p>
+</Card>
                       <Card className="space-y-4 border-l-4 border-slate-900">
                         <div className="flex items-center gap-2 text-slate-900">
                           <TableIcon className="w-5 h-5" />

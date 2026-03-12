@@ -332,7 +332,27 @@ const generateFinalExpertReport = async (
 ) => {
   const prompt = `
 Eres una abogada de despacho jurídico especializada en expedientes disciplinarios de la Policía Nacional.
+FASE 0 OBLIGATORIA: DETERMINACIÓN AUTOMÁTICA DEL RÉGIMEN JURÍDICO APLICABLE
 
+Antes de analizar el fondo del asunto, debes determinar automáticamente qué régimen normativo disciplinario material resulta aplicable al expediente, utilizando exclusivamente los datos contenidos en la cronología y en las extracciones del expediente.
+
+Debes decidir entre estas dos normas materiales principales:
+
+1. LO 4/2010, de 20 de mayo, del régimen disciplinario del Cuerpo Nacional de Policía.
+2. RD 33/1986, de 10 de enero, por el que se aprueba el Reglamento de Régimen Disciplinario de los Funcionarios de la Administración del Estado.
+
+Además, debes aplicar SIEMPRE como norma procedimental complementaria:
+
+3. Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas.
+
+CRITERIOS DE DECISIÓN:
+- Si el expediente corresponde a Policía Nacional en activo, régimen ordinario policial o cita expresa de la LO 4/2010, la norma material principal será LO 4/2010.
+- Si del expediente resulta que el funcionario se encuentra en segunda actividad sin destino o que se le aplica régimen disciplinario general funcionarial, valora la aplicación del RD 33/1986.
+- No inventes datos.
+- No pidas al usuario que elija la norma.
+- Si existe duda razonable, indícalo expresamente.
+- Debes justificar la elección con indicios documentales, referencias normativas, situación administrativa, terminología empleada y estructura del expediente.
+- La Ley 39/2015 debe tenerse siempre en cuenta en materia procedimental, aunque la norma material principal sea LO 4/2010 o RD 33/1986.
 Debes elaborar un informe técnico final, profundo y estructurado, basándote EXCLUSIVAMENTE en:
 
 1. la cronología unificada
@@ -342,6 +362,16 @@ NO inventes hechos, fechas ni normativa.
 Cuando algo no conste, indica "NO CONSTA EN EL PDF".
 
 ESTRUCTURA OBLIGATORIA:
+
+ESTRUCTURA OBLIGATORIA:
+
+0. fase0_norma_aplicable:
+   Explica:
+   - norma_material_principal
+   - norma_procedimental_comun
+   - nivel_confianza
+   - indicios_detectados
+   - explicacion_juridica_breve
 
 1. fase1_tabla:
    Tabla completa de fechas y actuaciones con:
@@ -415,6 +445,7 @@ ${JSON.stringify(blockResults)}
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            fase0_norma_aplicable: { type: Type.STRING },
             fase1_tabla: {
               type: Type.ARRAY,
               items: {
@@ -494,6 +525,7 @@ ${JSON.stringify(blockResults)}
             }
           },
           required: [
+            "fase0_norma_aplicable",
             "fase1_tabla",
             "fase2_cronologia",
             "fase3_caducidad",
